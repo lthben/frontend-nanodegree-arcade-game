@@ -11,7 +11,7 @@ var Enemy = function() {
     this.speed = getRandomInt(50, 150);
     this.col = -1;
     this.x = this.col*101;
-    this.y = this.row*83;
+    this.y = this.row*83 - 20;
 };
 
 // Update the enemy's position, required method for game
@@ -25,7 +25,7 @@ Enemy.prototype.update = function(dt) {
         this.x = -101;
         this.row = getRandomInt(1, 3);
         this.speed = getRandomInt(30, 170);
-        this.y = this.row*83;
+        this.y = this.row*83 - 20;
     }
 };
 
@@ -45,12 +45,26 @@ var Player = function() {
     this.row = 5;
     this.col = 2;
     this.x = this.col*101,
-    this.y = this.row*83;
+    this.y = this.row*83 - 20;
+
+    this.isHit = false;
+    this.isSuccessful = false;
 }
 
 Player.prototype.update = function(dt) {
     this.x = this.col*101,
-    this.y = this.row*83;
+    this.y = this.row*83 - 20;
+
+    if (this.row == 0) {
+        this.isSuccessful = true; //has crossed the road
+    }
+
+    if ( (this.isHit == true) || (this.isSuccessful == true) ) {
+        this.col = 2; //retreat to starting pos
+        this.row = 5;
+        this.isHit = false;
+        this.isSuccessful = false;
+    }
 }
 
 Player.prototype.render = function() {
@@ -85,6 +99,26 @@ Player.prototype.handleInput = function(theKeyName) {
     }
 }
 
+// Text object to handle all on-screen text
+var GameText = function() {
+
+    ctx.font = "18pt Impact";
+    ctx.textAlign = "center";
+}
+
+GameText.prototype.render = function() {
+
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(0, 0, 505, 606);
+
+    ctx.fillStyle = 'white';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 2;
+    ctx.fillText("Udacity frontend nanodregree arcade game", 505/2, 606/2);
+    ctx.strokeText("Udacity frontend nanodregree arcade game", 505/2, 606/2);
+}
+
+
 // Now instantiate your objects.
 // Place all enemy objects in an array called allEnemies
 // Place the player object in a variable called player
@@ -96,7 +130,10 @@ var allEnemies,
 var init_entities = function() {
 
     allEnemies = [];
-    player = new Player;
+    player = new Player();
+    gameText = new GameText();
+
+    console.log(gameMode);
 
     for (var i = 0; i < enemyCount; i++) {
            allEnemies.push(new Enemy);
@@ -105,6 +142,27 @@ var init_entities = function() {
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function checkCollisions() {
+
+    for (var anEnemy in allEnemies) {
+        if (allEnemies.hasOwnProperty(anEnemy)) {
+             // console.log(allEnemies[anEnemy].x);
+
+            if ( (Math.abs(allEnemies[anEnemy].x - player.x) < 50)
+                &&  (Math.abs(allEnemies[anEnemy].y - player.y) == 0) ) {
+
+                // console.log("hit");
+                player.isHit = true;
+            }
+
+        //     if (Math.abs(this.y - player.y) == 0) {
+        //         player.isHit = true;
+        //         console.log("is hit");
+        //     }
+        }
+    }
 }
 
 // This listens for key presses and sends the keys to your

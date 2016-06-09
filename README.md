@@ -1,3 +1,12 @@
+###Instructions###
+
+Open the index.html file in a web browser and the game should run automatically.
+
+Follow the on-screen instructions on how to play.
+
+
+###For developer use only###
+
 frontend-nanodegree-arcade-game
 ===============================
 
