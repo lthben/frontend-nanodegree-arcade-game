@@ -1,14 +1,14 @@
-###Instructions###
+frontend-nanodegree-arcade-game
+===============================
+
+#Instructions:-#
 
 Open the index.html file in a web browser and the game should run automatically.
 
 Follow the on-screen instructions on how to play.
 
 
-###For developer use only###
-
-frontend-nanodegree-arcade-game
-===============================
+#For developer use only:-#
 
 Students should use this [rubric](https://review.udacity.com/#!/projects/2696458597/rubric) for self-checking their submission.
 

@@ -14,8 +14,8 @@
  * a little simpler to work with.
  */
 
-var gameModes = { playerSelection: 0, inGame: 1, GameOver: 2},
-    gameMode = gameModes.playerSelection,
+var gameModes = { welcomeScreen: 0, playerSelection: 1, inGame: 2, GameOver: 3},
+    myGameMode = gameModes.welcomeScreen,
     canvasWidth = 505,
     canvasHeight = 606;
 
@@ -140,6 +140,7 @@ var Engine = (function(global) {
                 ctx.drawImage(Resources.get(rowImages[row]), col * 101, row * 83);
             }
         }
+
         renderEntities();
     }
 
@@ -151,12 +152,25 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
-            enemy.render();
-        });
 
-        player.render();
-        gameText.render();
+        if ( (myGameMode== gameModes.welcomeScreen) || (myGameMode== gameModes.inGame) ) {
+
+            allEnemies.forEach(function(enemy) {
+                enemy.render();
+            });
+
+            player.render();
+
+            if (myGameMode== gameModes.inGame) {
+                myGame.run_game();
+            }
+        }
+
+        myGameText.render(); //includes the dropScreen effect
+
+        if (myGameMode == gameModes.playerSelection) {
+            render_charactersForSelection();
+        }
     }
 
     /* This function does nothing but it could have been a good place to
@@ -176,7 +190,15 @@ var Engine = (function(global) {
         'images/water-block.png',
         'images/grass-block.png',
         'images/enemy-bug.png',
-        'images/char-boy.png'
+        'images/char-boy.png',
+        'images/char-cat-girl.png',
+        'images/char-princess-girl.png',
+        'images/Key.png',
+        'images/Gem Blue.png',
+        'images/Gem Green.png',
+        'images/Gem Orange.png',
+        'images/Heart.png',
+        'images/Rock.png'
     ]);
     Resources.onReady(init);
 
