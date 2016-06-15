@@ -64,8 +64,14 @@ Player.prototype.update = function(dt) {
     }
 
     if (this.hasCrossed == true) {
-        if (myGame.whichGame == "keys") {
-            if (myGame.myKey.isHit == false) { //hasn't collected key yet
+        if (myGame.whichGame == "keys" && myGame.myKey.isHit == false) {
+            this.retreat();
+        } else if (myGame.whichGame == "hearts") {
+            if (myGame.heart_1.isHit == false || myGame.heart_2.isHit == false || myGame.heart_3.isHit == false) {
+                this.retreat();
+            }
+        } else if (myGame.whichGame == "gems") {
+            if (myGame.gem_1.isHit == false || myGame.gem_2.isHit == false || myGame.gem_3.isHit == false) {
                 this.retreat();
             }
         }
@@ -120,7 +126,7 @@ Player.prototype.handleInput = function(theKeyName) {
 
 var Goodie = function() { //key, gem or heart
 
-    this.sprite = 'images/Key.png';
+    this.sprite = '';
 
     this.row = 2;
     this.col = 2;
@@ -129,27 +135,25 @@ var Goodie = function() { //key, gem or heart
 
     this.isHit = false;
     this.lastTime = Date.now();
+    this.canAppear = true; //used for the gems game because they appear in sequence
 }
 
 Goodie.prototype.update = function(dt) {
     this.x = this.col*101,
     this.y = this.row*83 - 20;
 
-    if (this.sprite == 'images/Key.png') {
-        if (Date.now() - this.lastTime > 1000) { //moves the key every few seconds
+    if (myGame.whichGame == 'keys') {
+        if (Date.now() - this.lastTime > 1000) { //moves the key every seconds
             this.row = getRandomInt(1, 3);
             this.col = getRandomInt(0, 4);
             this.lastTime = Date.now();
-            // console.log("key:" + myGame.myKey.row + "," + myGame.myKey.col + " player:" + player.row + "," + player.col);
         }
     }
 }
 
 Goodie.prototype.render = function() {
-    if (this.sprite == 'images/Key.png') {
-        if (myGame.myKey.isHit == false) {
-            ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-        }
+    if (this.isHit == false && this.canAppear == true) {
+        ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
     }
 }
 
@@ -280,7 +284,7 @@ var GameText = function() { //handles all screen text
     }
 }
 
-function render_charactersForSelection() { //character selection screen
+var render_charactersForSelection = function() { //character selection screen
 
     ctx.drawImage(charSelectorImage, charSelectorPosX, canvasHeight*0.3);
     ctx.drawImage(charImage1, canvasWidth*0.1, canvasHeight*0.2);
@@ -288,7 +292,7 @@ function render_charactersForSelection() { //character selection screen
     ctx.drawImage(charImage3, canvasWidth*0.7, canvasHeight*0.2);
 }
 
-function render_charSelector(theKeyName) { //handles the character selection
+var render_charSelector = function(theKeyName) { //handles the character selection
 
     switch(theKeyName) {
         case('left'):
@@ -347,12 +351,46 @@ var Game = function() {
                 this.myKey.isHit = false;
             break;
 
-            case("gems"):
+            case("hearts"):
+                this.heart_1 = new Goodie();
+                this.heart_1.sprite = 'images/Heart.png';
+                this.heart_1.row = 3;
+                this.heart_1.col = getRandomInt(0, 4);
+                this.heart_1.isHit = false;
 
+                this.heart_2 = new Goodie();
+                this.heart_2.sprite = 'images/Heart.png';
+                this.heart_2.row = 2;
+                this.heart_2.col = getRandomInt(0, 4);
+                this.heart_2.isHit = false;
+
+                this.heart_3 = new Goodie();
+                this.heart_3.sprite = 'images/Heart.png';
+                this.heart_3.row = 1;
+                this.heart_3.col = getRandomInt(0, 4);
+                this.heart_3.isHit = false;
             break;
 
-            case("hearts"):
+            case("gems"):
+                this.gem_1 = new Goodie();
+                this.gem_1.sprite = 'images/Gem Orange.png';
+                this.gem_1.row = getRandomInt(1, 3);
+                this.gem_1.col = getRandomInt(0, 4);
+                this.gem_1.isHit = false;
 
+                this.gem_2 = new Goodie();
+                this.gem_2.sprite = 'images/Gem Green.png';
+                this.gem_2.row = getRandomInt(1, 3);
+                this.gem_2.col = getRandomInt(0, 4);
+                this.gem_2.isHit = false;
+                this.gem_2.canAppear = false; //only appears after gem 1 is obtained by player
+
+                this.gem_3 = new Goodie();
+                this.gem_3.sprite = 'images/Gem Blue.png';
+                this.gem_3.row = getRandomInt(1, 3);
+                this.gem_3.col = getRandomInt(0, 4);
+                this.gem_3.isHit = false;
+                this.gem_3.canAppear = false;
             break;
 
             default:
@@ -371,6 +409,20 @@ var Game = function() {
         switch(this.whichGame) {
             case("keys"):
                 if (this.myKey.isHit == true && player.hasCrossed == true) {
+                    this.isGameOver = true;
+                    myGameMode = gameModes.GameOver;
+                }
+            break;
+
+            case("hearts"):
+                if (this.heart_1.isHit == true && this.heart_2.isHit == true && this.heart_3.isHit == true && player.hasCrossed == true) {
+                    this.isGameOver = true;
+                    myGameMode = gameModes.GameOver;
+                }
+            break;
+
+            case("gems"):
+                if (this.gem_1.isHit == true && this.gem_2.isHit == true && this.gem_3.isHit == true && player.hasCrossed == true) {
                     this.isGameOver = true;
                     myGameMode = gameModes.GameOver;
                 }
@@ -417,6 +469,30 @@ var Game = function() {
                 this.myKey.render();
             break;
 
+            case("hearts"):
+                this.heart_1.update();
+                this.heart_1.render();
+                this.heart_2.update();
+                this.heart_2.render();
+                this.heart_3.update();
+                this.heart_3.render();
+            break;
+
+            case("gems"):
+                if (this.gem_1.isHit == true) {
+                    this.gem_2.canAppear = true; //gem 2 appears once gem 1 is obtained by player
+                }
+                if (this.gem_2.isHit == true) {
+                    this.gem_3.canAppear = true;
+                }
+                this.gem_1.update();
+                this.gem_1.render();
+                this.gem_2.update();
+                this.gem_2.render();
+                this.gem_3.update();
+                this.gem_3.render();
+            break;
+
             default:
             break;
         }
@@ -438,7 +514,7 @@ var allEnemies,
     charSelectorPosX = canvasWidth*0.4,
     myGameText, myGame;
 
-function init_entities() {
+var init_entities = function() {
 
     allEnemies = [];
 
@@ -471,11 +547,11 @@ function init_entities() {
     myGame = new Game();
 }
 
-function getRandomInt(min, max) {
+var getRandomInt = function(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function checkCollisions() {
+var checkCollisions = function() {
 
     switch(myGameMode) {
 
@@ -498,6 +574,28 @@ function checkCollisions() {
                     }
                 break;
 
+                case("hearts"):
+                    if ( myGame.heart_1.row == player.row && myGame.heart_1.col == player.col ) {
+                        myGame.heart_1.isHit = true;
+                    }
+                    if ( myGame.heart_2.row == player.row && myGame.heart_2.col == player.col ) {
+                        myGame.heart_2.isHit = true;
+                    }
+                    if ( myGame.heart_3.row == player.row && myGame.heart_3.col == player.col ) {
+                        myGame.heart_3.isHit = true;
+                    }
+                break;
+
+                case("gems"):
+                    if ( myGame.gem_1.row == player.row && myGame.gem_1.col == player.col ) {
+                        myGame.gem_1.isHit = true;
+                    }
+                    if ( myGame.gem_2.row == player.row && myGame.gem_2.canAppear == true && myGame.gem_2.col == player.col ) {
+                        myGame.gem_2.isHit = true;
+                    }
+                    if ( myGame.gem_3.row == player.row && myGame.gem_3.canAppear == true && myGame.gem_3.col == player.col ) {
+                        myGame.gem_3.isHit = true;
+                    }
                 default:
                 break;
             }
